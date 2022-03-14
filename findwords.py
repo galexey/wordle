@@ -142,11 +142,17 @@ def get_suggestions(all_possible_words:List[str],shall_include:str,exclude:str="
             "X":0.03,
             "Q":0.02}
 
-    possible_words = []
-    for a_shall_include in shall_include:
-        for a_word_to_test in all_possible_words:
+    possible_words = all_possible_words
+    remaining_words = []
+    def get_fitting_words(possible_words:List[str],shall_include:str,exclude:str=""):
+        result=[]
+        for a_word_to_test in possible_words:
             if does_it_fit_for_suggestions(shall_include=a_shall_include, word_to_test=a_word_to_test, exclude_letters=exclude):
-                possible_words.append(a_word_to_test)
+                result.append(a_word_to_test)
+        return result
+
+    for a_shall_include in shall_include:
+        possible_words = get_fitting_words(possible_words=possible_words,shall_include=shall_include,exclude=exclude)
 
     # now calculate_probability
     word_probs: Dict[str,float] = {}
@@ -203,11 +209,14 @@ def main(argv):
     for opt, arg in opts:
         if opt in ["-h", "--help"]:
             print("findwords.py --wordlistfilename <filename> \n--dictionaryfilename <filename>\n[--known <known_parts>] \n[--number_of_letters <number>] \n[--exclude_letters <letters_not_in_the_word>\n known_parts in the form: \n   *: unknown letter\n   lowercase letter: letter is in word, but position is wrong \n   UPPERCASE LETTER: letter and position is correct")
-            print("e.g. create a 5-words file list based on a dictionary in the folder 'wordlist': findwords.py --wordlistfilename x5_letter_words.txt --dictionaryfilename './wordlist/german.dic' --n 5")
+            print("\n e.g. create a 5-words file list based on a dictionary in the folder 'wordlist'. Later on you can then use the generated file to save time.")
+            print("   findwords.py --wordlistfilename x5_letter_words.txt --dictionaryfilename './wordlist/german.dic' --n 5")
             print("\n e.g. find words based on the wordlistfile '5_letter_words.txt' with 5 letters based on the following hints:\n  there is an 'R' in the word, but not on the first place, \n  there is a 'E' in the word, but not in the 5th place")
             print("  there is a 'F' in the first place!!! (so you got that letter right already),\n  there is a 'R' but not on the 3rd, \n  there is a 'D', but not at 4th, \n  there is a 'E' but not at the 5th place. :")
-            print("  the following letters are NOT part to the word:'itnba')"
-                  "--wordlistfilename 5_letter_words.txt --n 5 --known r..e.,F.rde --exclude_letters itnba")
+            print("  the following letters are NOT part to the word:'itnba')")
+            print("   findwords.py --wordlistfilename 5_letter_words.txt --n 5 --known r..e.,F.rde --exclude_letters itnba")
+            print("\n e.g. find suggestions based on the wordlistfile '5_letter_words.txt' with 5 letters based on the following hints:\n  there is an 'n' in the word, but not on the 5th place, \n  there must not be an G in the 3rd place, \n  exclude the letters 'rdtchei'")
+            print("   findwords.py --suggest_words --wordlistfilename 5_letter_words.txt --n 5 --known ....n,..G.. --exclude_letters rdtchei")
             sys.exit()
         elif opt in ["--w", "--wordlistfilename"]:
            filename = arg
